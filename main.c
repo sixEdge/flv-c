@@ -45,7 +45,6 @@ main(int argc, char ** argv)
         std_log_error("read tag size failed: %d", err_code);
         return err_code;
     }
-    std_log_info("prev_tag_size = %d", prev_tag_size);
 
 
     /* Read tag header */
