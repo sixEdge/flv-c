@@ -5,6 +5,10 @@
 #include <stdarg.h>
 #include <string.h>
 
+#ifdef __linux
+#include <errno.h>
+#endif /* __linux */
+
 
 #if 0
 

@@ -23,7 +23,7 @@ typedef char flv_code;  /* use char for type byte haven't been defined */
 
 
 
-typedef unsigned long long  int64;
+typedef long long           int64;
 typedef unsigned long long  u_int64;
 typedef unsigned int        u_int;
 typedef unsigned short      u_short;

@@ -50,8 +50,7 @@ amf_list_insertfore(amf_list_t * list, amf_node_t * node, amf_data_t * data)
             if (node->prev != NULL) {
                 node->prev->next = new_node;
                 node->prev = new_node;
-            }
-            else {
+            } else {
                 list->first_element = new_node;
             }
             ++(list->size);
@@ -293,8 +292,7 @@ amf_boolean_read(amf_read_proc read_proc, void * user_data) {
     u_byte val;
     if (read_proc(&val, sizeof(u_byte), user_data) == sizeof(u_byte)) {
         return amf_boolean_new(val);
-    }
-    else {
+    } else {
         return amf_data_error(AMF_ERROR_EOF);
     }
 }
@@ -376,8 +374,7 @@ amf_object_read(amf_read_proc read_proc, void * user_data)
             amf_data_free(element);
             amf_data_free(data);
             return NULL;
-        }
-        else {
+        } else {
             amf_data_free(name);
         }
     }
@@ -465,7 +462,7 @@ amf_array_read(amf_read_proc read_proc, void * user_data)
         return amf_data_error(AMF_ERROR_EOF);
     }
 
-    array_size = array_size;
+    array_size = swap32_be(array_size);
 
     for (i = 0; i < array_size; ++i) {
         element = amf_data_read(read_proc, user_data);
@@ -496,7 +493,7 @@ amf_date_read(amf_read_proc read_proc, void * user_data)
     if (read_proc(&milliseconds, sizeof(u_int64), user_data) == sizeof(u_int64)
     &&  read_proc(&timezone, sizeof(short), user_data) == sizeof(short))
     {
-        return amf_date_new(milliseconds, timezone);
+        return amf_date_new( swap64_be(milliseconds) , swap16_be(timezone) );
     }
     return amf_data_error(AMF_ERROR_EOF);
 }
@@ -803,7 +800,7 @@ amf_data_clone(const amf_data_t * data)
         case AMF_TYPE_BOOLEAN:      return amf_boolean_new(amf_boolean_get_value(data));
         case AMF_TYPE_STRING:
             if (data->string_data.mbstr != NULL) {
-                return amf_string_new((byte *)strdup((char *)amf_string_get_bytes(data)), amf_string_get_size(data));
+                return amf_string_new((byte *) strdup((char *) amf_string_get_bytes(data)), amf_string_get_size(data));
             }
             return amf_str(NULL);
         case AMF_TYPE_NULL:         return NULL;
@@ -882,7 +879,7 @@ __amf_data_dump(FILE * stream, const amf_data_t * data, int indent_level)
         char datestr[128];
         switch (data->type) {
         case AMF_TYPE_NUMBER:
-            fprintf(stream, "%.12g", data->number_data);
+            fprintf(stream, "%.12g", *(double*) &data->number_data);
             break;
         case AMF_TYPE_BOOLEAN:
             fprintf(stream, "%s", (data->boolean_data) ? "true" : "false");
@@ -1086,8 +1083,7 @@ amf_object_add(amf_data_t * data, const char * name, amf_data_t * element)
         if (amf_list_push(&data->list_data, amf_str(name)) != NULL) {
             if (amf_list_push(&data->list_data, element) != NULL) {
                 return element;
-            }
-            else {
+            } else {
                 amf_data_free(amf_list_pop(&data->list_data));
             }
         }
@@ -1147,8 +1143,7 @@ amf_object_delete(amf_data_t * data, const char * name)
                 amf_node_t * data_node = node->next;
                 amf_data_free(amf_list_delete(&data->list_data, node));
                 return amf_list_delete(&data->list_data, data_node);
-            }
-            else {
+            } else {
                 node = node->next;
             }
         }

@@ -9,6 +9,7 @@ parse_args_file(int argc, char ** argv)
 {
     if (argc <= 1) {
         std_log_error("empty file name");
+        exit(FLV_ERROR_OPEN);
         return NULL;
     }
 
