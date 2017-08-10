@@ -255,7 +255,8 @@ file_read(void * out_buffer, size_t size, void * user_data) {
 
 
 /* callback function to write data to a file stream */
-static size_t file_write(const void * in_buffer, size_t size, void * user_data) {
+static size_t 
+file_write(const void * in_buffer, size_t size, void * user_data) {
     return fwrite(in_buffer, sizeof(byte), size, (FILE *) user_data);
 }
 
@@ -776,14 +777,14 @@ amf_data_write(const amf_data_t * data, amf_write_proc write_proc, void * user_d
 
 
 /* data type */
-byte 
+amf_type 
 amf_data_get_type(const amf_data_t * data) {
     return (data != NULL) ? data->type : AMF_TYPE_NULL;
 }
 
 
 /* error code */
-byte 
+amf_type 
 amf_data_get_error_code(const amf_data_t * data) {
     return (data != NULL) ? data->error_code : AMF_ERROR_NULL_POINTER;
 }
@@ -800,7 +801,9 @@ amf_data_clone(const amf_data_t * data)
         case AMF_TYPE_BOOLEAN:      return amf_boolean_new(amf_boolean_get_value(data));
         case AMF_TYPE_STRING:
             if (data->string_data.mbstr != NULL) {
-                return amf_string_new((byte *) strdup((char *) amf_string_get_bytes(data)), amf_string_get_size(data));
+                return amf_string_new(
+                    (byte*) strdup((char*) amf_string_get_bytes(data)) , 
+                    amf_string_get_size(data));
             }
             return amf_str(NULL);
         case AMF_TYPE_NULL:         return NULL;
@@ -817,7 +820,7 @@ amf_data_clone(const amf_data_t * data)
                 }
                 return d;
             }
-        case AMF_TYPE_DATE:     return amf_date_new(amf_date_get_milliseconds(data), amf_date_get_timezone(data));
+        case AMF_TYPE_DATE:     return amf_date_new( amf_date_get_milliseconds(data) , amf_date_get_timezone(data) );
         /*case AMF_TYPE_SIMPLEOBJECT:*/
         case AMF_TYPE_XML:      return NULL;
         case AMF_TYPE_CLASS:    return NULL;
@@ -859,7 +862,6 @@ amf_data_free(amf_data_t * data)
 }
 
 
-/* @Deprecated */
 void __amf_data_dump(FILE *, const amf_data_t *, int);
 
 /* dump AMF data into a stream as text */
@@ -869,6 +871,7 @@ amf_data_dump(FILE * stream, const amf_data_t * data, int indent_level) {
     putchar(10); // '\n'
 }
 
+/* @Deprecated */
 void
 __amf_data_dump(FILE * stream, const amf_data_t * data, int indent_level)
 {
@@ -1116,7 +1119,7 @@ amf_object_set(amf_data_t * data, const char * name, amf_data_t * element)
     if (data != NULL) {
         amf_node_t * node = amf_list_first(&(data->list_data));
         while (node != NULL) {
-            if (strncmp((char*)(node->data->string_data.mbstr), name, (size_t) (node->data->string_data.size)) == 0) {
+            if (strncmp((char*) (node->data->string_data.mbstr), name, (size_t) (node->data->string_data.size)) == 0) {
                 node = node->next;
                 if (node != NULL && node->data != NULL) {
                     amf_data_free(node->data);
@@ -1139,9 +1142,9 @@ amf_object_delete(amf_data_t * data, const char * name)
         amf_node_t * node = amf_list_first(&data->list_data);
         while (node != NULL) {
             node = node->next;
-            if (strncmp((char*)(node->data->string_data.mbstr), name, (size_t) (node->data->string_data.size)) == 0) {
+            if (strncmp((char*) (node->data->string_data.mbstr), name, (size_t) (node->data->string_data.size)) == 0) {
                 amf_node_t * data_node = node->next;
-                amf_data_free(amf_list_delete(&data->list_data, node));
+                amf_data_free( amf_list_delete(&data->list_data, node) );
                 return amf_list_delete(&data->list_data, data_node);
             } else {
                 node = node->next;
@@ -1198,8 +1201,7 @@ amf_object_prev(amf_node_t * node)
 
 
 amf_data_t * 
-amf_object_get_name(amf_node_t * node)
-{
+amf_object_get_name(amf_node_t * node) {
     return (node != NULL) ? node->data : NULL;
 }
 
@@ -1239,6 +1241,7 @@ amf_array_new(void)
     }
     return data;
 }
+
 
 u_int 
 amf_array_size(const amf_data_t * data) {
